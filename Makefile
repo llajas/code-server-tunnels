@@ -9,11 +9,12 @@ else
   Dockerfile := Containerfile
 endif
 
-all: build push
 .PHONY: all build push
 
+all: build push
+
 build:
-        podman build -t $(IMG) . -f $(Dockerfile)
+	docker build -t $(IMG) . -f $(Dockerfile)
 
 push:
-        podman push $(IMG)
+	docker push $(IMG)

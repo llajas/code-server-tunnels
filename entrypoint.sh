@@ -38,6 +38,17 @@ setup_local_bin() {
     fi
 }
 
+########## CUSTOMIZATIONS ##########
+
+
+
+
+
+
+
+####################################
+
+
 start_tunnel() {
     local TUNNEL_NAME="${TUNNEL_NAME:-vscode-tunnel}"
     local PROVIDER="${PROVIDER:-microsoft}"
@@ -55,4 +66,7 @@ start_tunnel() {
 setup_permissions
 setup_bashrc
 setup_local_bin
+#### CUSTOMIZATIONS ####
+
+########################
 start_tunnel

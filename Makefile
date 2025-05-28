@@ -13,7 +13,7 @@ all: build push
 .PHONY: all build push
 
 build:
-        docker build -t $(IMG) . -f $(Dockerfile)
+        podman build -t $(IMG) . -f $(Dockerfile)
 
 push:
-        docker push $(IMG)
+        podman push $(IMG)

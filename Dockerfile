@@ -6,6 +6,7 @@ RUN apt-get update && apt-get install -y \
     git \
     sudo \
     zsh \
+    openssh-client \
   && rm -rf /var/lib/apt/lists/*
 
 RUN useradd -m -s /bin/bash coder \

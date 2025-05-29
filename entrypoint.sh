@@ -40,7 +40,7 @@ setup_local_bin() {
 
 ########## CUSTOMIZATIONS ##########
 
-generate_ssh_key() {
+setup_ssh() {
     if [ "${PRIVATE_KEY}" = "true" ] && [ "${INJECT_KEY}" != "true" ]; then
         if [ ! -d /home/coder/.ssh ]; then
             mkdir -p /home/coder/.ssh
@@ -77,7 +77,8 @@ generate_ssh_key() {
 }
 
 setup_docker() {
-    if [ "${DOCKER}" = "true" ]; then
+    if [ -n "${DOCKER_HOST}" ]; then
+        DOCKER_HOST_IP=$(echo "${DOCKER_HOST}" | sed -n 's/.*@\(.*\)/\1/p' | sed 's#/.*##')
         if ! command -v docker &>/dev/null; then
             echo "Docker CLI not found. Installing docker as coder..."
             su coder -c "sudo apt-get update && sudo apt-get install -y docker.io docker-compose"
@@ -87,8 +88,19 @@ setup_docker() {
         if ! getent group docker >/dev/null; then
             groupadd docker
         fi
-        usermod -aG docker coder
-        echo "Added coder to docker group"
+        if ! id -nG coder | grep -qw docker; then
+            usermod -aG docker coder
+            echo "Added coder to docker group"
+        fi
+
+        if [ -n "${DOCKER_HOST_IP}" ]; then
+            if ! grep -q "${DOCKER_HOST_IP}" /home/coder/.ssh/known_hosts 2>/dev/null; then
+                ssh-keyscan -H "${DOCKER_HOST_IP}" >> /home/coder/.ssh/known_hosts 2>/dev/null
+                chown coder:coder /home/coder/.ssh/known_hosts
+                chmod 644 /home/coder/.ssh/known_hosts
+                echo "Added ${DOCKER_HOST_IP} to known_hosts"
+            fi
+        fi
     fi
 }
 
@@ -114,7 +126,7 @@ setup_permissions
 setup_bashrc
 setup_local_bin
 #### CUSTOMIZATIONS ####
-generate_ssh_key
+setup_ssh
 setup_docker
 ########################
 start_tunnel

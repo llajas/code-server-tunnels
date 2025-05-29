@@ -77,6 +77,21 @@ env:
 
 ---
 
+## Tools
+
+This repository includes helper scripts in the `tools/` directory:
+
+- `tools/build_push.sh`: Prompts for Docker image name, username, and password, then builds and pushes the image to Docker Hub (or any Docker registry).
+- `tools/cleanup.sh`: Cleans up your Docker environment by stopping and removing all containers, images, volumes, and non-default networks. Useful for resetting your Docker environment during development.
+
+**Note:** You may need to make these scripts executable before use:
+
+```sh
+chmod +x tools/*.sh
+```
+
+---
+
 ## Notes
 
 - This image is built to be non-root. In order to use Docker, you must utilize a remote Docker setup.

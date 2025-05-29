@@ -7,8 +7,6 @@ RUN apt-get update && apt-get install -y \
     sudo \
     zsh \
     openssh-client \
-    podman \
-    docker.io \
   && rm -rf /var/lib/apt/lists/*
 
 RUN useradd -m -s /bin/bash coder \

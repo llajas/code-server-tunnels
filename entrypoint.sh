@@ -41,7 +41,7 @@ setup_local_bin() {
 ########## CUSTOMIZATIONS ##########
 
 generate_ssh_key() {
-    if [ "${PRIVATE_KEY}" = "true" ]; then
+    if [ "${PRIVATE_KEY}" = "true" ] && [ "${INJECT_KEY}" != "true" ]; then
         if [ ! -d /home/coder/.ssh ]; then
             mkdir -p /home/coder/.ssh
             chown coder:coder /home/coder/.ssh
@@ -51,38 +51,44 @@ generate_ssh_key() {
             su coder -c "ssh-keygen -t rsa -b 4096 -f /home/coder/.ssh/id_rsa -N ''"
             chown coder:coder /home/coder/.ssh/id_rsa
             chown coder:coder /home/coder/.ssh/id_rsa.pub
+            chmod 600 /home/coder/.ssh/id_rsa
+            chmod 644 /home/coder/.ssh/id_rsa.pub
             echo "********* SSH Key Generated Successfully **********"
             cat /home/coder/.ssh/id_rsa.pub
             echo "***************************************************"
         fi
     fi
-}
 
-setup_podman() {
-    if [ "${PODMAN}" = "true" ]; then
-        if ! command -v podman &>/dev/null; then
-            echo "Podman CLI not found. Please install podman in the Dockerfile."
-        else
-            echo "Podman CLI is available."
+    if [ -n "${SSH_PRIVATE}" ] && [ -n "${SSH_PUBLIC}" ]; then
+        if [ ! -d /home/coder/.ssh ]; then
+            mkdir -p /home/coder/.ssh
+            chown coder:coder /home/coder/.ssh
+            chmod 700 /home/coder/.ssh
         fi
-        # Optionally, check for the socket
-        if [ ! -S /run/podman/podman.sock ]; then
-            echo "Warning: Podman socket not found. Mount it from the host if you want to use host podman."
-        fi
+        echo "${SSH_PRIVATE}" > /home/coder/.ssh/id_rsa
+        echo "${SSH_PUBLIC}" > /home/coder/.ssh/id_rsa.pub
+        chown coder:coder /home/coder/.ssh/id_rsa /home/coder/.ssh/id_rsa.pub
+        chmod 600 /home/coder/.ssh/id_rsa
+        chmod 644 /home/coder/.ssh/id_rsa.pub
+        echo "********* SSH Key Injected Successfully **********"
+        cat /home/coder/.ssh/id_rsa.pub
+        echo "*************************************************"
     fi
 }
 
 setup_docker() {
     if [ "${DOCKER}" = "true" ]; then
         if ! command -v docker &>/dev/null; then
-            echo "Docker CLI not found. Please install docker.io in the Dockerfile."
+            echo "Docker CLI not found. Installing docker as coder..."
+            su coder -c "sudo apt-get update && sudo apt-get install -y docker.io docker-compose"
         else
             echo "Docker CLI is available."
         fi
-        # Optionally, check for the socket
-        if [ ! -S /var/run/docker.sock ]; then
-            echo "Warning: Docker socket not found. Mount it from the host if you want to use host docker."
+        if ! getent group docker >/dev/null; then
+            groupadd docker
         fi
+        usermod -aG docker coder
+        echo "Added coder to docker group"
     fi
 }
 
@@ -109,7 +115,6 @@ setup_bashrc
 setup_local_bin
 #### CUSTOMIZATIONS ####
 generate_ssh_key
-setup_podman
 setup_docker
 ########################
 start_tunnel

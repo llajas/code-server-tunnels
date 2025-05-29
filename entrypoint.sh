@@ -41,7 +41,7 @@ setup_local_bin() {
 ########## CUSTOMIZATIONS ##########
 
 setup_ssh() {
-    if [ "${PRIVATE_KEY}" = "true" ] && [ "${INJECT_KEY}" != "true" ]; then
+    if [ "${PRIVATE_KEY}" = "true" ]; then
         if [ ! -d /home/coder/.ssh ]; then
             mkdir -p /home/coder/.ssh
             chown coder:coder /home/coder/.ssh

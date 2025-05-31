@@ -81,14 +81,7 @@ setup_docker() {
         DOCKER_HOST_IP=$(echo "${DOCKER_HOST}" | sed -n 's/.*@\(.*\)/\1/p' | sed 's#/.*##')
         if ! command -v docker &>/dev/null; then
             echo "Docker CLI not found. Installing docker as coder..."
-
-            su coder -c 'sudo apt-get update'
-            su coder -c 'sudo apt-get install -y ca-certificates curl gnupg lsb-release'
-            su coder -c 'sudo mkdir -p /etc/apt/keyrings'
-            su coder -c 'curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg'
-            su coder -c 'echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null'
-            su coder -c 'sudo apt-get update'
-            su coder -c 'sudo apt-get install -y docker.io docker-compose-plugin'
+            su coder -c 'sudo apt-get install -y docker.io'
         else
             echo "Docker CLI is available."
         fi
@@ -99,7 +92,19 @@ setup_docker() {
             usermod -aG docker coder
             echo "Added coder to docker group"
         fi
-
+        if [ -n "${DOCKER_COMPOSE}" = "true" ]; then
+            if ! command -v docker-compose &>/dev/null; then
+                su coder -c 'sudo apt-get update'
+                su coder -c 'sudo apt-get install -y ca-certificates curl gnupg lsb-release'
+                su coder -c 'sudo mkdir -p /etc/apt/keyrings'
+                su coder -c 'curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg'
+                su coder -c 'echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null'
+                su coder -c 'sudo apt-get update'
+                su coder -c 'sudo apt-get install -y docker-compose-plugin'
+            else
+                echo "Docker Compose is already installed."
+            fi
+        fi
         if [ -n "${DOCKER_HOST_IP}" ]; then
             if ! grep -q "${DOCKER_HOST_IP}" /home/coder/.ssh/known_hosts 2>/dev/null; then
                 if [ ! -d /home/coder/.ssh ]; then

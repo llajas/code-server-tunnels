@@ -94,7 +94,7 @@ setup_docker() {
             usermod -aG docker coder
             echo "Added coder to docker group"
         fi
-        if [ -n "${DOCKER_COMPOSE}" = "true" ]; then
+        if [ "${DOCKER_COMPOSE}" = "true" ]; then
             if ! command -v docker-compose &>/dev/null; then
                 su coder -c 'sudo apt-get update'
                 su coder -c 'sudo apt-get install -y ca-certificates curl gnupg lsb-release'
@@ -150,7 +150,8 @@ start_tunnel() {
 
     if [ ! -f /home/coder/.vscode/cli/token.json ] || [ ! -f /home/coder/.vscode/cli/code_tunnel.json ]; then
         su coder -c "export HOME=/home/coder; /home/coder/.local/bin/code tunnel user login --provider '${PROVIDER}'"
-        su coder -c "touch coder:coder /home/coder/check && echo ${TUNNEL_NAME} > /home/coder/check"
+        su coder -c "touch /home/coder/check && echo ${TUNNEL_NAME} > /home/coder/check"
+        chown coder:coder /home/coder/check
     else
         echo "Tunnel already exists."
     fi

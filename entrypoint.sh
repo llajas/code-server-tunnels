@@ -12,13 +12,13 @@ setup_permissions() {
     chown -R coder:coder /home/coder
 }
 
-setup_bashrc() {
-    if [ ! -f /home/coder/.bashrc ]; then
-        touch /home/coder/.bashrc
-        chown coder:coder /home/coder/.bashrc
+setup_zshrc() {
+    if [ ! -f /home/coder/.zshrc ]; then
+        touch /home/coder/.zshrc
+        chown coder:coder /home/coder/.zshrc
     fi
-    if ! grep -qxF 'export PATH="/home/coder/.local/bin:${PATH}"' /home/coder/.bashrc; then
-        echo 'export PATH="/home/coder/.local/bin:${PATH}"' >> /home/coder/.bashrc
+    if ! grep -qxF 'export PATH="/home/coder/.local/bin:${PATH}"' /home/coder/.zshrc; then
+        echo 'export PATH="/home/coder/.local/bin:${PATH}"' >> /home/coder/.zshrc
     fi
 }
 
@@ -78,8 +78,8 @@ setup_ssh() {
 
 setup_docker() {
     if [ -n "${DOCKER_HOST}" ]; then
-        DOCKER_HOST_IP=$(echo "${DOCKER_HOST}" | sed -n 's/.*@\(.*\)/\1/p' | sed 's#/.*##')
-        echo "Setting up Docker with host ${DOCKER_HOST_IP}"
+        docker_host_ip=$(echo "${DOCKER_HOST}" | sed -n 's/.*@\(.*\)/\1/p' | sed 's#/.*##')
+        echo "Setting up Docker with host ${docker_host_ip}"
         if ! command -v docker &>/dev/null; then
             echo "Docker CLI not found. Installing docker as coder..."
             su coder -c 'sudo apt-get update'
@@ -109,17 +109,17 @@ setup_docker() {
         else
             echo "Skipping Docker Compose Install."
         fi
-        if [ -n "${DOCKER_HOST_IP}" ]; then
-            if ! grep -q "${DOCKER_HOST_IP}" /home/coder/.ssh/known_hosts 2>/dev/null; then
+        if [ -n "${docker_host_ip}" ]; then
+            if ! grep -q "${docker_host_ip}" /home/coder/.ssh/known_hosts 2>/dev/null; then
                 if [ ! -d /home/coder/.ssh ]; then
                     mkdir -p /home/coder/.ssh
                     chown coder:coder /home/coder/.ssh
                     chmod 700 /home/coder/.ssh
                 fi
-                ssh-keyscan -H "${DOCKER_HOST_IP}" >> /home/coder/.ssh/known_hosts 2>/dev/null
+                ssh-keyscan -H "${docker_host_ip}" >> /home/coder/.ssh/known_hosts 2>/dev/null
                 chown coder:coder /home/coder/.ssh/known_hosts
                 chmod 644 /home/coder/.ssh/known_hosts
-                echo "Added ${DOCKER_HOST_IP} to known_hosts"
+                echo "Added ${docker_host_ip} to known_hosts"
             fi
         fi
     fi

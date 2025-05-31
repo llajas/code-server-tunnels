@@ -162,7 +162,7 @@ start_tunnel() {
 }
 
 setup_permissions
-setup_bashrc
+setup_zshrc
 setup_local_bin
 #### CUSTOMIZATIONS ####
 setup_ssh

@@ -94,7 +94,7 @@ setup_docker() {
             usermod -aG docker coder
             echo "Added coder to docker group"
         fi
-        if [ -n "${DOCKER_COMPOSE}" = "true" ]; then
+        if [ "${DOCKER_COMPOSE}" = "true" ]; then
             if ! command -v docker-compose &>/dev/null; then
                 su coder -c 'sudo apt-get update'
                 su coder -c 'sudo apt-get install -y ca-certificates curl gnupg lsb-release'

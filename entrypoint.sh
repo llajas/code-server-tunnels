@@ -106,6 +106,8 @@ setup_docker() {
             else
                 echo "Docker Compose is already installed."
             fi
+        else
+            echo "Skipping Docker Compose Install."
         fi
         if [ -n "${DOCKER_HOST_IP}" ]; then
             if ! grep -q "${DOCKER_HOST_IP}" /home/coder/.ssh/known_hosts 2>/dev/null; then

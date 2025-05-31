@@ -12,6 +12,8 @@ RUN apt-get update && apt-get install -y \
 RUN useradd -m -s /bin/bash coder \
   && echo "coder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
+RUN chsh -s /bin/zsh coder
+
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod 0555 /usr/local/bin/entrypoint.sh
 

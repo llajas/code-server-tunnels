@@ -79,8 +79,10 @@ setup_ssh() {
 setup_docker() {
     if [ -n "${DOCKER_HOST}" ]; then
         DOCKER_HOST_IP=$(echo "${DOCKER_HOST}" | sed -n 's/.*@\(.*\)/\1/p' | sed 's#/.*##')
+        echo "Setting up Docker with host ${DOCKER_HOST_IP}"
         if ! command -v docker &>/dev/null; then
             echo "Docker CLI not found. Installing docker as coder..."
+            su coder -c 'sudo apt-get update'
             su coder -c 'sudo apt-get install -y docker.io'
         else
             echo "Docker CLI is available."

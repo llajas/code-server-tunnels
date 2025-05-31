@@ -41,7 +41,7 @@ setup_local_bin() {
 ########## CUSTOMIZATIONS ##########
 
 setup_ssh() {
-    if [ "${PRIVATE_KEY}" = "true" ] && [ "${INJECT_KEY}" != "true" ]; then
+    if [ "${PRIVATE_KEY}" = "true" ]; then
         if [ ! -d /home/coder/.ssh ]; then
             mkdir -p /home/coder/.ssh
             chown coder:coder /home/coder/.ssh
@@ -104,6 +104,14 @@ setup_docker() {
     fi
 }
 
+setup_git_config() {
+    if [ -n "${GIT_USER_NAME}" ]; then
+        su coder -c "git config --global user.name '${GIT_USER_NAME}'"
+    fi
+    if [ -n "${GIT_USER_EMAIL}" ]; then
+        su coder -c "git config --global user.email '${GIT_USER_EMAIL}'"
+    fi
+}
 
 ####################################
 
@@ -128,5 +136,6 @@ setup_local_bin
 #### CUSTOMIZATIONS ####
 setup_ssh
 setup_docker
+setup_git_config
 ########################
 start_tunnel

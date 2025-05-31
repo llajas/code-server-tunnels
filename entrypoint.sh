@@ -150,7 +150,8 @@ start_tunnel() {
 
     if [ ! -f /home/coder/.vscode/cli/token.json ] || [ ! -f /home/coder/.vscode/cli/code_tunnel.json ]; then
         su coder -c "export HOME=/home/coder; /home/coder/.local/bin/code tunnel user login --provider '${PROVIDER}'"
-        su coder -c "touch coder:coder /home/coder/check && echo ${TUNNEL_NAME} > /home/coder/check"
+        su coder -c "touch /home/coder/check && echo ${TUNNEL_NAME} > /home/coder/check"
+        chown coder:coder /home/coder/check
     else
         echo "Tunnel already exists."
     fi

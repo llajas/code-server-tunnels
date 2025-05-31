@@ -81,7 +81,14 @@ setup_docker() {
         DOCKER_HOST_IP=$(echo "${DOCKER_HOST}" | sed -n 's/.*@\(.*\)/\1/p' | sed 's#/.*##')
         if ! command -v docker &>/dev/null; then
             echo "Docker CLI not found. Installing docker as coder..."
-            su coder -c "sudo apt-get update && sudo apt-get install -y docker.io docker-compose"
+
+            su coder -c 'sudo apt-get update'
+            su coder -c 'sudo apt-get install -y ca-certificates curl gnupg lsb-release'
+            su coder -c 'sudo mkdir -p /etc/apt/keyrings'
+            su coder -c 'curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg'
+            su coder -c 'echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null'
+            su coder -c 'sudo apt-get update'
+            su coder -c 'sudo apt-get install -y docker.io docker-compose-plugin'
         else
             echo "Docker CLI is available."
         fi
@@ -95,6 +102,11 @@ setup_docker() {
 
         if [ -n "${DOCKER_HOST_IP}" ]; then
             if ! grep -q "${DOCKER_HOST_IP}" /home/coder/.ssh/known_hosts 2>/dev/null; then
+                if [ ! -d /home/coder/.ssh ]; then
+                    mkdir -p /home/coder/.ssh
+                    chown coder:coder /home/coder/.ssh
+                    chmod 700 /home/coder/.ssh
+                fi
                 ssh-keyscan -H "${DOCKER_HOST_IP}" >> /home/coder/.ssh/known_hosts 2>/dev/null
                 chown coder:coder /home/coder/.ssh/known_hosts
                 chmod 644 /home/coder/.ssh/known_hosts
@@ -118,16 +130,25 @@ setup_git_config() {
 
 start_tunnel() {
     local TUNNEL_NAME="${TUNNEL_NAME:-vscode-tunnel}"
-    local PROVIDER="${PROVIDER:-microsoft}"
+    local PROVIDER="${PROVIDER:-github}"
     export PATH="/home/coder/.local/bin:${PATH}"
+
+    if [ -f /home/coder/check ]; then
+        local OLD_TUNNEL_NAME=$(cat /home/coder/check)
+        if [ "${OLD_TUNNEL_NAME}" != "${TUNNEL_NAME}" ]; then
+            rm -f /home/coder/.vscode/cli/token.json /home/coder/.vscode/cli/code_tunnel.json
+            echo "Removed old tunnel configuration."
+        fi
+    fi
 
     if [ ! -f /home/coder/.vscode/cli/token.json ] || [ ! -f /home/coder/.vscode/cli/code_tunnel.json ]; then
         su coder -c "export HOME=/home/coder; /home/coder/.local/bin/code tunnel user login --provider '${PROVIDER}'"
-        su coder -c "export HOME=/home/coder; /home/coder/.local/bin/code tunnel --accept-server-license-terms --name '${TUNNEL_NAME}'"
+        su coder -c "touch coder:coder /home/coder/check && echo ${TUNNEL_NAME} > /home/coder/check"
     else
         echo "Tunnel already exists."
-        su coder -c "export HOME=/home/coder; /home/coder/.local/bin/code tunnel --accept-server-license-terms --name '${TUNNEL_NAME}'"
     fi
+
+    su coder -c "export HOME=/home/coder; /home/coder/.local/bin/code tunnel --accept-server-license-terms --name '${TUNNEL_NAME}'"
 }
 
 setup_permissions

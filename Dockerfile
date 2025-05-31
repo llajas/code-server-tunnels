@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y \
     openssh-client \
   && rm -rf /var/lib/apt/lists/*
 
-RUN useradd -m -s /bin/bash coder \
+RUN useradd -m -s /bin/zsh coder \
   && echo "coder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh

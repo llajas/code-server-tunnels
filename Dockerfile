@@ -9,12 +9,13 @@ RUN apt-get update && apt-get install -y \
     openssh-client \
   && rm -rf /var/lib/apt/lists/*
 
-RUN useradd -m -s /bin/zsh coder \
-  && echo "coder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+RUN useradd -m -s /bin/zsh red \
+  && echo "red ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+USER red
+WORKDIR /home/red
+
+COPY --chown=red:red entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod 0555 /usr/local/bin/entrypoint.sh
-
-WORKDIR /home/coder
 
 CMD ["/usr/local/bin/entrypoint.sh"]

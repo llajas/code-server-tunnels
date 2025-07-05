@@ -1,6 +1,6 @@
 REGISTRY ?= registry.lajas.tech
 REPO ?= vscode-tunnel
-TAG := $(shell git describe --tags --always --dirty)
+TAG := $(shell git describe --tags --always)
 IMG := $(REGISTRY)/$(REPO):$(TAG)
 
 ifeq ($(wildcard Containerfile),)
